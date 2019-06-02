@@ -1,0 +1,19 @@
+{
+  "name": "@remvst/raycaster",
+  "version": "1.0.0",
+  "description": "Raycaster",
+  "main": "src/raycaster.js",
+  "scripts": {
+    "test": "./node_modules/jasmine/bin/jasmine.js",
+    "coverage": "istanbul cover ./node_modules/jasmine/bin/jasmine.js"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@remvst/matrix": "^1.0.0"
+  },
+  "devDependencies": {
+    "istanbul": "^0.4.5",
+    "jasmine": "^3.4.0"
+  }
+}
