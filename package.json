@@ -1,8 +1,8 @@
 {
   "name": "@remvst/raycaster",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Raycaster",
-  "main": "src/raycaster.js",
+  "main": "lib/raycaster.js",
   "scripts": {
     "test": "ts-node node_modules/jasmine/bin/jasmine --config=spec/support/jasmine.json",
     "coverage": "nyc -r lcov -e .ts -x \"spec/**/*.spec.ts\" npm run test",
