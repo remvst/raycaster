@@ -1,33 +1,46 @@
 'use strict';
 
-const Util = require('./util');
+import Matrix from '@remvst/matrix';
+import { pointDistance } from './util';
 
-class Raycaster {
+interface Vector2 {
+    x: number;
+    y: number;
+}
 
-    castRay(matrix, cellSize, startX, startY, angle, maxDistance) {
+export default class Raycaster {
+
+    castRay(
+        matrix: Matrix<any | null>,
+        cellSize: number,
+        startX: number,
+        startY: number,
+        angle: number,
+        maxDistance: number = Number.POSITIVE_INFINITY,
+    ): Vector2 | null {
         // Horizontal lines
         let castHorizontal = this.castAgainstHorizontal(matrix, cellSize, startX, startY, angle);
         let castVertical = this.castAgainstVertical(matrix, cellSize, startX, startY, angle);
 
-        let cast;
+        let cast: Vector2 | null;
         if (castVertical && !castHorizontal) {
             cast = castVertical;
         } else if (!castVertical) {
             cast = castHorizontal;
         } else {
-            const dHorizontal = Util.pointDistance(startX, startY, castHorizontal.x, castHorizontal.y);
-            const dVertical = Util.pointDistance(startX, startY, castVertical.x, castVertical.y);
+            const dHorizontal = pointDistance(startX, startY, castHorizontal!.x, castHorizontal!.y);
+            const dVertical = pointDistance(startX, startY, castVertical.x, castVertical.y);
             cast = dHorizontal < dVertical ? castHorizontal : castVertical;
         }
 
-        if (!cast || maxDistance && Util.pointDistance(startX, startY, cast.x, cast.y) > maxDistance) {
+        if (!cast || maxDistance && pointDistance(startX, startY, cast.x, cast.y) > maxDistance) {
             return null;
         }
 
         return cast;
     }
 
-    castAgainstHorizontal(matrix, cellSize, startX, startY, angle) {
+    castAgainstHorizontal(matrix: Matrix<any | null>, cellSize: number, startX: number, startY: number, angle: number) {
         const pointingDown = Math.sin(angle) > 0;
 
         const y = ~~(startY / cellSize) * cellSize + (pointingDown ? cellSize : 0);
@@ -48,7 +61,7 @@ class Raycaster {
         );
     }
 
-    castAgainstVertical(matrix, cellSize, startX, startY, angle) {
+    castAgainstVertical(matrix: Matrix<any | null>, cellSize: number, startX: number, startY: number, angle: number): Vector2 | null {
         const pointingRight = Math.cos(angle) > 0;
 
         const x = ~~(startX / cellSize) * cellSize + (pointingRight ? cellSize : 0);
@@ -69,7 +82,7 @@ class Raycaster {
         );
     }
 
-    doCast(matrix, cellSize, startX, startY, xStep, yStep, epsilonX, epsilonY) {
+    doCast(matrix: Matrix<any | null>, cellSize: number, startX: number, startY: number, xStep: number, yStep: number, epsilonX: number, epsilonY: number): Vector2 | null {
         if (!isFinite(xStep) || !isFinite(yStep)) {
             return null;
         }
@@ -77,13 +90,13 @@ class Raycaster {
         let x = startX,
             y = startY;
 
-        for(let i = 0 ; i < 100 ; i++) {
+        while (true) {
             const row = ~~((y + epsilonY) / cellSize);
             const col = ~~((x + epsilonX) / cellSize);
 
             if (row < 0 || col < 0 || row >= matrix.rows || col >= matrix.cols) {
                 // Out of bounds
-                return null;
+                break;
             }
 
             if (matrix.get(row, col)) {
@@ -97,8 +110,8 @@ class Raycaster {
             x += xStep;
             y += yStep;
         }
+
+        return null;
     }
 
 }
-
-module.exports = Raycaster;
