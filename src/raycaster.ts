@@ -43,7 +43,7 @@ export default class Raycaster {
     castAgainstHorizontal(matrix: Matrix<any | null>, cellSize: number, startX: number, startY: number, angle: number) {
         const pointingDown = Math.sin(angle) > 0;
 
-        const y = ~~(startY / cellSize) * cellSize + (pointingDown ? cellSize : 0);
+        const y = Math.floor(startY / cellSize) * cellSize + (pointingDown ? cellSize : 0);
         const x = startX + (y - startY) / Math.tan(angle);
 
         const yStep = pointingDown ? cellSize : -cellSize;
@@ -64,7 +64,7 @@ export default class Raycaster {
     castAgainstVertical(matrix: Matrix<any | null>, cellSize: number, startX: number, startY: number, angle: number): Vector2 | null {
         const pointingRight = Math.cos(angle) > 0;
 
-        const x = ~~(startX / cellSize) * cellSize + (pointingRight ? cellSize : 0);
+        const x = Math.floor(startX / cellSize) * cellSize + (pointingRight ? cellSize : 0);
         const y = startY + (x - startX) * Math.tan(angle);
 
         const xStep = pointingRight ? cellSize : -cellSize;
@@ -91,8 +91,8 @@ export default class Raycaster {
             y = startY;
 
         while (true) {
-            const row = ~~((y + epsilonY) / cellSize);
-            const col = ~~((x + epsilonX) / cellSize);
+            const row = Math.floor((y + epsilonY) / cellSize);
+            const col = Math.floor((x + epsilonX) / cellSize);
 
             if (row < 0 || col < 0 || row >= matrix.rows || col >= matrix.cols) {
                 // Out of bounds

@@ -12,7 +12,7 @@ describe('a raycaster', () => {
 
     beforeEach(() => {
         matrix = new Matrix([
-            [1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 0, 1, 1, 1],
             [1, 0, 0, 0, 0, 0, 1],
             [1, 0, 0, 0, 1, 0, 1],
             [1, 0, 0, 0, 0, 0, 0],
@@ -20,6 +20,16 @@ describe('a raycaster', () => {
         ]);
 
         raycaster = new Raycaster();
+    });
+
+    it('cannot cast a ray from the outside', () => {
+        const cast = raycaster.castRay(matrix, 10, 15, -5, 0);
+        expect(cast).toBe(null);
+    });
+
+    it('cannot cast a ray from the inside and hit an edge outside', () => {
+        const cast = raycaster.castRay(matrix, 10, 25, 3, -Math.PI / 4);
+        expect(cast).toBe(null);
     });
 
     it('can cast a simple ray straight to the right', () => {

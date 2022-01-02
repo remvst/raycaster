@@ -1,6 +1,6 @@
 {
   "name": "@remvst/raycaster",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Raycaster",
   "main": "lib/raycaster.js",
   "scripts": {
