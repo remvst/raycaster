@@ -28,7 +28,7 @@ describe('a raycaster', () => {
     });
 
     it('cannot cast a ray from the inside and hit an edge outside', () => {
-        const cast = raycaster.castRay(matrix, 10, 25, 3, -Math.PI / 4);
+        const cast = raycaster.castRay(matrix, 10, 35, 3, -Math.PI / 4);
         expect(cast).toBe(null);
     });
 
@@ -51,7 +51,7 @@ describe('a raycaster', () => {
     });
 
     it('can cast a simple ray straight to the top', () => {
-        const cast = raycaster.castRay(matrix, 10, 15, 40, -Math.PI / 2);
+        const cast = raycaster.castRay(matrix, 10, 15, 39, -Math.PI / 2);
         expect(cast!.x).toBeCloseTo(15, ERROR_MARGIN);
         expect(cast!.y).toBeCloseTo(10, ERROR_MARGIN);
     });
@@ -87,5 +87,11 @@ describe('a raycaster', () => {
     it('can cast a simple ray that goes outside the matrix', () => {
         const cast = raycaster.castRay(matrix, 10, 15, 35, 0);
         expect(cast).toBe(null);
+    });
+
+    it('can hit a cell right away', () => {
+        const cast = raycaster.castRay(matrix, 10, 5, 0, Math.PI / 2);
+        expect(cast!.x).toBeCloseTo(5, ERROR_MARGIN);
+        expect(cast!.y).toBeCloseTo(0, ERROR_MARGIN);
     });
 });

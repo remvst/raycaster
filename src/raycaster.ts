@@ -18,6 +18,17 @@ export default class Raycaster {
         angle: number,
         maxDistance: number = Number.POSITIVE_INFINITY,
     ): Vector2 | null {
+
+        const row = Math.floor(startY / cellSize);
+        const col = Math.floor(startX / cellSize);
+
+        if (matrix.get(row, col)) {
+            return {
+                'x': startX,
+                'y': startY,
+            };
+        }
+
         // Horizontal lines
         let castHorizontal = this.castAgainstHorizontal(matrix, cellSize, startX, startY, angle);
         let castVertical = this.castAgainstVertical(matrix, cellSize, startX, startY, angle);
