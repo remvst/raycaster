@@ -6,19 +6,20 @@
   "scripts": {
     "test": "ts-node node_modules/jasmine/bin/jasmine --config=spec/support/jasmine.json",
     "coverage": "nyc -r lcov -e .ts -x \"spec/**/*.spec.ts\" npm run test",
-    "build": "tsc"
+    "build": "rm -rf lib && tsc",
+    "prepublishOnly": "npm i && npm run build"
   },
-  "author": "",
+  "author": "Rémi Vansteelandt",
   "license": "UNLICENSED",
   "dependencies": {
-    "@remvst/matrix": "^2.0.1"
+    "@remvst/matrix": "^2.0.1",
+    "typescript": "^5.2.2"
   },
   "devDependencies": {
     "@types/jasmine": "^3.6.2",
-    "istanbul": "^0.4.5",
+    "nyc": "^15.1.0",
     "jasmine": "^3.4.0",
     "jasmine-ts": "^0.3.0",
-    "typescript": "^4.1.3",
     "ts-node": "^9.1.1"
   }
 }
