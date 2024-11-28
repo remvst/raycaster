@@ -1,4 +1,4 @@
-import { distance, isBetween, pointDistance, Vector2, Vector2Like } from '@remvst/geometry';
+import { between, distance, isBetween, pointDistance, Vector2, Vector2Like } from '@remvst/geometry';
 import Matrix from '@remvst/matrix';
 
 export interface CastResult {
@@ -40,10 +40,60 @@ export class Raycaster<CellType> {
         return this.matrix.rows * this.cellSize;
     }
 
+    adaptRay(ray: Ray): Ray {
+        let { x, y } = ray.start;
+
+        // Starting within bounds, no need to adapt
+        if (isBetween(0, x, this.width) && isBetween(0, y, this.height)) {
+            return ray;
+        }
+
+        const { angle } = ray;
+        const originalX = x;
+        const originalY = y;
+
+        const slope = Math.sin(angle) / Math.cos(angle);
+        const yAtOrigin = y - slope * x;
+
+        const closestX = between(0, x, this.width);
+        const closestY = between(0, y, this.height);
+
+        const yAtClosestX = slope * closestX + yAtOrigin;
+        const xAtClosestY = (closestY - yAtOrigin) / slope;
+
+        let adjustedX: number;
+        let adjustedY: number;
+
+        if (isBetween(0, closestX, this.width) && isBetween(0, yAtClosestX, this.height)) {
+            adjustedX = closestX;
+            adjustedY = yAtClosestX;
+        } else if (isBetween(0, xAtClosestY, this.width) && isBetween(0, closestY, this.height)) {
+            adjustedX = xAtClosestY;
+            adjustedY = closestY;
+        } else {
+            return ray;
+        }
+
+        const angleToAdjusted = Math.atan2(adjustedY - y, adjustedX - x);
+        if (Math.abs(angleToAdjusted - angle) > Math.PI / 2) {
+            return ray;
+        }
+
+        ray.start.x = adjustedX;
+        ray.start.y = adjustedY;
+
+        if (ray.maxDistance) {
+            ray.maxDistance -= pointDistance(originalX, originalY, adjustedX, adjustedY);
+        }
+        return ray;
+    }
+
     castRay(
         ray: Ray,
         out: CastResult = newCastResult(),
     ): CastResult | null {
+        if (ray.maxDistance < 0) return null;
+
         const { start, angle, maxDistance } = ray;
 
         const row = Math.floor(start.y / this.cellSize);
@@ -75,7 +125,7 @@ export class Raycaster<CellType> {
         if (!cast) return null;
 
         const distanceToImpact = distance(start, cast);
-        if (maxDistance !== undefined && distanceToImpact > maxDistance) return null;
+        if (maxDistance && distanceToImpact > maxDistance) return null;
 
         out.impact.x = cast.x;
         out.impact.y = cast.y;
