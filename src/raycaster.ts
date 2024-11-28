@@ -1,7 +1,10 @@
-import { pointDistance, Vector2Like } from '@remvst/geometry';
+import { pointDistance, Vector2, Vector2Like } from '@remvst/geometry';
 import Matrix from '@remvst/matrix';
 
 export class Raycaster {
+
+    private readonly reusableHorizontalCast = new Vector2();
+    private readonly reusableVerticalCast = new Vector2();
 
     castRay(
         matrix: Matrix<any | null>,
@@ -10,15 +13,15 @@ export class Raycaster {
         startY: number,
         angle: number,
         maxDistance: number = Number.POSITIVE_INFINITY,
+        out: Vector2Like | null = new Vector2(),
     ): Vector2Like | null {
         const row = Math.floor(startY / cellSize);
         const col = Math.floor(startX / cellSize);
 
         if (matrix.get(row, col)) {
-            return {
-                'x': startX,
-                'y': startY,
-            };
+            out.x = startX;
+            out.y = startY;
+            return out;
         }
 
         // Horizontal lines
@@ -40,10 +43,18 @@ export class Raycaster {
             return null;
         }
 
-        return cast;
+        out.x = cast.x;
+        out.y = cast.y;
+        return out;
     }
 
-    castAgainstHorizontal(matrix: Matrix<any | null>, cellSize: number, startX: number, startY: number, angle: number) {
+    private castAgainstHorizontal(
+        matrix: Matrix<any | null>,
+        cellSize: number,
+        startX: number,
+        startY: number,
+        angle: number,
+    ) {
         const pointingDown = Math.sin(angle) > 0;
 
         const y = Math.floor(startY / cellSize) * cellSize + (pointingDown ? cellSize : 0);
@@ -60,11 +71,18 @@ export class Raycaster {
             xStep,
             yStep,
             0,
-            pointingDown ? 0 : -cellSize * 0.1
+            pointingDown ? 0 : -cellSize * 0.1,
+            this.reusableHorizontalCast,
         );
     }
 
-    castAgainstVertical(matrix: Matrix<any | null>, cellSize: number, startX: number, startY: number, angle: number): Vector2Like | null {
+    private castAgainstVertical(
+        matrix: Matrix<any | null>,
+        cellSize: number,
+        startX: number,
+        startY: number,
+        angle: number,
+    ): Vector2Like | null {
         const pointingRight = Math.cos(angle) > 0;
 
         const x = Math.floor(startX / cellSize) * cellSize + (pointingRight ? cellSize : 0);
@@ -81,11 +99,22 @@ export class Raycaster {
             xStep,
             yStep,
             pointingRight ? 0 : -cellSize * 0.1,
-            0
+            0,
+            this.reusableVerticalCast,
         );
     }
 
-    doCast(matrix: Matrix<any | null>, cellSize: number, startX: number, startY: number, xStep: number, yStep: number, epsilonX: number, epsilonY: number): Vector2Like | null {
+    private doCast(
+        matrix: Matrix<any | null>,
+        cellSize: number,
+        startX: number,
+        startY: number,
+        xStep: number,
+        yStep: number,
+        epsilonX: number,
+        epsilonY: number,
+        out: Vector2Like,
+    ): Vector2Like | null {
         if (!isFinite(xStep) || !isFinite(yStep)) {
             return null;
         }
@@ -99,15 +128,14 @@ export class Raycaster {
 
             if (row < 0 || col < 0 || row >= matrix.rows || col >= matrix.cols) {
                 // Out of bounds
-                break;
+                return null;
             }
 
             if (matrix.get(row, col)) {
                 // Got a block!
-                return {
-                    'x': x,
-                    'y': y
-                };
+                out.x = x;
+                out.y = y;
+                return out;
             }
 
             x += xStep;
