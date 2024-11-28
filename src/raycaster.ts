@@ -13,6 +13,12 @@ function newCastResult(): CastResult {
     };
 }
 
+export interface Ray {
+    start: Vector2Like;
+    angle: number;
+    maxDistance?: number;
+}
+
 export class Raycaster<CellType> {
 
     private readonly reusableHorizontalCast = new Vector2();
@@ -27,11 +33,11 @@ export class Raycaster<CellType> {
     }
 
     castRay(
-        start: Vector2Like,
-        angle: number,
-        maxDistance: number = Number.POSITIVE_INFINITY,
+        ray: Ray,
         out: CastResult = newCastResult(),
     ): CastResult | null {
+        const { start, angle, maxDistance } = ray;
+
         const row = Math.floor(start.y / this.cellSize);
         const col = Math.floor(start.x / this.cellSize);
 
@@ -61,7 +67,7 @@ export class Raycaster<CellType> {
         if (!cast) return null;
 
         const distanceToImpact = pointDistance(start.x, start.y, cast.x, cast.y);
-        if (distanceToImpact > maxDistance) return null;
+        if (maxDistance !== undefined && distanceToImpact > maxDistance) return null;
 
         out.impact.x = cast.x;
         out.impact.y = cast.y;
