@@ -50,8 +50,8 @@ export class Raycaster<CellType> {
         }
 
         // Horizontal lines
-        let castHorizontal = this.castAgainstHorizontal(this.matrix, this.cellSize, start.x, start.y, angle);
-        let castVertical = this.castAgainstVertical(this.matrix, this.cellSize, start.x, start.y, angle);
+        let castHorizontal = this.castAgainstHorizontal(start.x, start.y, angle);
+        let castVertical = this.castAgainstVertical(start.x, start.y, angle);
 
         let cast: Vector2Like | null;
         if (castVertical && !castHorizontal) {
@@ -77,64 +77,54 @@ export class Raycaster<CellType> {
     }
 
     private castAgainstHorizontal(
-        matrix: Matrix<any | null>,
-        cellSize: number,
         startX: number,
         startY: number,
         angle: number,
     ) {
         const pointingDown = Math.sin(angle) > 0;
 
-        const y = Math.floor(startY / cellSize) * cellSize + (pointingDown ? cellSize : 0);
+        const y = Math.floor(startY / this.cellSize) * this.cellSize + (pointingDown ? this.cellSize : 0);
         const x = startX + (y - startY) / Math.tan(angle);
 
-        const yStep = pointingDown ? cellSize : -cellSize;
+        const yStep = pointingDown ? this.cellSize : -this.cellSize;
         const xStep = yStep / Math.tan(angle);
 
         return this.doCast(
-            matrix,
-            cellSize,
             x,
             y,
             xStep,
             yStep,
             0,
-            pointingDown ? 0 : -cellSize * 0.1,
+            pointingDown ? 0 : -this.cellSize * 0.1,
             this.reusableHorizontalCast,
         );
     }
 
     private castAgainstVertical(
-        matrix: Matrix<any | null>,
-        cellSize: number,
         startX: number,
         startY: number,
         angle: number,
     ): Vector2Like | null {
         const pointingRight = Math.cos(angle) > 0;
 
-        const x = Math.floor(startX / cellSize) * cellSize + (pointingRight ? cellSize : 0);
+        const x = Math.floor(startX / this.cellSize) * this.cellSize + (pointingRight ? this.cellSize : 0);
         const y = startY + (x - startX) * Math.tan(angle);
 
-        const xStep = pointingRight ? cellSize : -cellSize;
+        const xStep = pointingRight ? this.cellSize : -this.cellSize;
         const yStep = xStep * Math.tan(angle);
 
         return this.doCast(
-            matrix,
-            cellSize,
             x,
             y,
             xStep,
             yStep,
-            pointingRight ? 0 : -cellSize * 0.1,
+            pointingRight ? 0 : -this.cellSize * 0.1,
             0,
             this.reusableVerticalCast,
         );
     }
 
     private doCast(
-        matrix: Matrix<any | null>,
-        cellSize: number,
         startX: number,
         startY: number,
         xStep: number,
@@ -151,15 +141,15 @@ export class Raycaster<CellType> {
             y = startY;
 
         while (true) {
-            const row = Math.floor((y + epsilonY) / cellSize);
-            const col = Math.floor((x + epsilonX) / cellSize);
+            const row = Math.floor((y + epsilonY) / this.cellSize);
+            const col = Math.floor((x + epsilonX) / this.cellSize);
 
-            if (row < 0 || col < 0 || row >= matrix.rows || col >= matrix.cols) {
+            if (row < 0 || col < 0 || row >= this.matrix.rows || col >= this.matrix.cols) {
                 // Out of bounds
                 return null;
             }
 
-            const cell = matrix.get(row, col);
+            const cell = this.matrix.get(row, col);
             if (this.isObstacle(cell)) {
                 // Got a block!
                 out.x = x;
