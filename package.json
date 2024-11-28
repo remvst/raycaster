@@ -1,12 +1,12 @@
 {
   "name": "@remvst/raycaster",
-  "version": "2.0.4",
+  "version": "3.0.0",
   "description": "Raycaster",
   "main": "lib/raycaster.js",
   "scripts": {
     "test": "ts-node node_modules/jasmine/bin/jasmine --config=spec/support/jasmine.json",
     "coverage": "nyc -r lcov -e .ts -x \"spec/**/*.spec.ts\" npm run test",
-    "build": "rm -rf lib && tsc",
+    "build": "rm -rf lib && tsc && tsc --project tsconfig.cjs.json",
     "prepublishOnly": "npm i && npm run build"
   },
   "author": "Rémi Vansteelandt",
@@ -15,10 +15,13 @@
     "@remvst/matrix": "^2.0.3",
     "typescript": "^5.2.2"
   },
+  "peerDependencies": {
+    "@remvst/geometry": "^2.7.0"
+  },
   "devDependencies": {
     "@types/jasmine": "^3.6.2",
-    "nyc": "^15.1.0",
     "jasmine": "^3.4.0",
+    "nyc": "^15.1.0",
     "ts-node": "^9.1.1"
   }
 }

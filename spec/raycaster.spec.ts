@@ -1,7 +1,5 @@
-'use strict';
-
 import Matrix from '@remvst/matrix';
-import Raycaster from '../src/raycaster';
+import { Raycaster } from '../src/raycaster';
 
 const ERROR_MARGIN = 0.01;
 

@@ -1,14 +1,7 @@
-'use strict';
-
+import { pointDistance, Vector2Like } from '@remvst/geometry';
 import Matrix from '@remvst/matrix';
-import { pointDistance } from './util';
 
-interface Vector2 {
-    x: number;
-    y: number;
-}
-
-export default class Raycaster {
+export class Raycaster {
 
     castRay(
         matrix: Matrix<any | null>,
@@ -17,8 +10,7 @@ export default class Raycaster {
         startY: number,
         angle: number,
         maxDistance: number = Number.POSITIVE_INFINITY,
-    ): Vector2 | null {
-
+    ): Vector2Like | null {
         const row = Math.floor(startY / cellSize);
         const col = Math.floor(startX / cellSize);
 
@@ -33,7 +25,7 @@ export default class Raycaster {
         let castHorizontal = this.castAgainstHorizontal(matrix, cellSize, startX, startY, angle);
         let castVertical = this.castAgainstVertical(matrix, cellSize, startX, startY, angle);
 
-        let cast: Vector2 | null;
+        let cast: Vector2Like | null;
         if (castVertical && !castHorizontal) {
             cast = castVertical;
         } else if (!castVertical) {
@@ -72,7 +64,7 @@ export default class Raycaster {
         );
     }
 
-    castAgainstVertical(matrix: Matrix<any | null>, cellSize: number, startX: number, startY: number, angle: number): Vector2 | null {
+    castAgainstVertical(matrix: Matrix<any | null>, cellSize: number, startX: number, startY: number, angle: number): Vector2Like | null {
         const pointingRight = Math.cos(angle) > 0;
 
         const x = Math.floor(startX / cellSize) * cellSize + (pointingRight ? cellSize : 0);
@@ -93,7 +85,7 @@ export default class Raycaster {
         );
     }
 
-    doCast(matrix: Matrix<any | null>, cellSize: number, startX: number, startY: number, xStep: number, yStep: number, epsilonX: number, epsilonY: number): Vector2 | null {
+    doCast(matrix: Matrix<any | null>, cellSize: number, startX: number, startY: number, xStep: number, yStep: number, epsilonX: number, epsilonY: number): Vector2Like | null {
         if (!isFinite(xStep) || !isFinite(yStep)) {
             return null;
         }
