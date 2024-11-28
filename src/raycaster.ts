@@ -1,4 +1,4 @@
-import { pointDistance, Vector2, Vector2Like } from '@remvst/geometry';
+import { distance, pointDistance, Vector2, Vector2Like } from '@remvst/geometry';
 import Matrix from '@remvst/matrix';
 
 export interface CastResult {
@@ -59,14 +59,14 @@ export class Raycaster<CellType> {
         } else if (!castVertical) {
             cast = castHorizontal;
         } else {
-            const dHorizontal = pointDistance(start.x, start.y, castHorizontal!.x, castHorizontal!.y);
-            const dVertical = pointDistance(start.x, start.y, castVertical.x, castVertical.y);
+            const dHorizontal = distance(start, castHorizontal);
+            const dVertical = distance(start, castVertical);
             cast = dHorizontal < dVertical ? castHorizontal : castVertical;
         }
 
         if (!cast) return null;
 
-        const distanceToImpact = pointDistance(start.x, start.y, cast.x, cast.y);
+        const distanceToImpact = distance(start, cast);
         if (maxDistance !== undefined && distanceToImpact > maxDistance) return null;
 
         out.impact.x = cast.x;
