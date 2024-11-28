@@ -1,6 +1,18 @@
 import { pointDistance, Vector2, Vector2Like } from '@remvst/geometry';
 import Matrix from '@remvst/matrix';
 
+export interface CastResult {
+    impact: Vector2Like;
+    distance: number;
+}
+
+function newCastResult(): CastResult {
+    return {
+        impact: new Vector2(),
+        distance: 0,
+    };
+}
+
 export class Raycaster {
 
     private readonly reusableHorizontalCast = new Vector2();
@@ -13,14 +25,15 @@ export class Raycaster {
         startY: number,
         angle: number,
         maxDistance: number = Number.POSITIVE_INFINITY,
-        out: Vector2Like | null = new Vector2(),
-    ): Vector2Like | null {
+        out: CastResult = newCastResult(),
+    ): CastResult | null {
         const row = Math.floor(startY / cellSize);
         const col = Math.floor(startX / cellSize);
 
         if (matrix.get(row, col)) {
-            out.x = startX;
-            out.y = startY;
+            out.impact.x = startX;
+            out.impact.y = startY;
+            out.distance = 0;
             return out;
         }
 
@@ -39,12 +52,15 @@ export class Raycaster {
             cast = dHorizontal < dVertical ? castHorizontal : castVertical;
         }
 
-        if (!cast || maxDistance && pointDistance(startX, startY, cast.x, cast.y) > maxDistance) {
-            return null;
-        }
+        if (!cast) return null;
 
-        out.x = cast.x;
-        out.y = cast.y;
+        const distanceToImpact = pointDistance(startX, startY, cast.x, cast.y);
+        if (distanceToImpact > maxDistance) return null;
+
+        out.impact.x = cast.x;
+        out.impact.y = cast.y;
+        out.distance = distanceToImpact;
+
         return out;
     }
 
