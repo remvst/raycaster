@@ -1,4 +1,4 @@
-import { distance, pointDistance, Vector2, Vector2Like } from '@remvst/geometry';
+import { distance, isBetween, pointDistance, Vector2, Vector2Like } from '@remvst/geometry';
 import Matrix from '@remvst/matrix';
 
 export interface CastResult {
@@ -32,6 +32,14 @@ export class Raycaster<CellType> {
 
     }
 
+    private get width() {
+        return this.matrix.cols * this.cellSize;
+    }
+
+    private get height() {
+        return this.matrix.rows * this.cellSize;
+    }
+
     castRay(
         ray: Ray,
         out: CastResult = newCastResult(),
@@ -50,8 +58,8 @@ export class Raycaster<CellType> {
         }
 
         // Horizontal lines
-        let castHorizontal = this.castAgainstHorizontal(start.x, start.y, angle);
-        let castVertical = this.castAgainstVertical(start.x, start.y, angle);
+        let castHorizontal = this.castAgainstHorizontal(ray, start.x, start.y, angle);
+        let castVertical = this.castAgainstVertical(ray, start.x, start.y, angle);
 
         let cast: Vector2Like | null;
         if (castVertical && !castHorizontal) {
@@ -77,6 +85,7 @@ export class Raycaster<CellType> {
     }
 
     private castAgainstHorizontal(
+        ray: Ray,
         startX: number,
         startY: number,
         angle: number,
@@ -90,6 +99,7 @@ export class Raycaster<CellType> {
         const xStep = yStep / Math.tan(angle);
 
         return this.doCast(
+            ray,
             x,
             y,
             xStep,
@@ -101,6 +111,7 @@ export class Raycaster<CellType> {
     }
 
     private castAgainstVertical(
+        ray: Ray,
         startX: number,
         startY: number,
         angle: number,
@@ -114,6 +125,7 @@ export class Raycaster<CellType> {
         const yStep = xStep * Math.tan(angle);
 
         return this.doCast(
+            ray,
             x,
             y,
             xStep,
@@ -125,6 +137,7 @@ export class Raycaster<CellType> {
     }
 
     private doCast(
+        ray: Ray,
         startX: number,
         startY: number,
         xStep: number,
@@ -137,14 +150,17 @@ export class Raycaster<CellType> {
             return null;
         }
 
-        let x = startX,
-            y = startY;
+        const distancePerStep = Math.hypot(xStep, yStep);
+        let totalDistance = pointDistance(ray.start.x, ray.start.y, startX, startY);
+
+        let x = startX;
+        let y = startY;
 
         while (true) {
             const row = Math.floor((y + epsilonY) / this.cellSize);
             const col = Math.floor((x + epsilonX) / this.cellSize);
 
-            if (row < 0 || col < 0 || row >= this.matrix.rows || col >= this.matrix.cols) {
+            if (!isBetween(0, x, this.width) || !isBetween(0, y, this.height)) {
                 // Out of bounds
                 return null;
             }
@@ -159,6 +175,11 @@ export class Raycaster<CellType> {
 
             x += xStep;
             y += yStep;
+            totalDistance += distancePerStep;
+
+            if (totalDistance > ray.maxDistance) {
+                return null;
+            }
         }
     }
 }
