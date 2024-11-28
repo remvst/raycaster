@@ -170,8 +170,5 @@ export class Raycaster<CellType> {
             x += xStep;
             y += yStep;
         }
-
-        return null;
     }
-
 }
