@@ -13,33 +13,38 @@ function newCastResult(): CastResult {
     };
 }
 
-export class Raycaster {
+export class Raycaster<CellType> {
 
     private readonly reusableHorizontalCast = new Vector2();
     private readonly reusableVerticalCast = new Vector2();
 
+    constructor(
+        readonly matrix: Matrix<CellType>,
+        readonly cellSize: number,
+        readonly isObstacle: (cell: CellType) => boolean,
+    ) {
+
+    }
+
     castRay(
-        matrix: Matrix<any | null>,
-        cellSize: number,
-        startX: number,
-        startY: number,
+        start: Vector2Like,
         angle: number,
         maxDistance: number = Number.POSITIVE_INFINITY,
         out: CastResult = newCastResult(),
     ): CastResult | null {
-        const row = Math.floor(startY / cellSize);
-        const col = Math.floor(startX / cellSize);
+        const row = Math.floor(start.y / this.cellSize);
+        const col = Math.floor(start.x / this.cellSize);
 
-        if (matrix.get(row, col)) {
-            out.impact.x = startX;
-            out.impact.y = startY;
+        if (this.matrix.get(row, col)) {
+            out.impact.x = start.x;
+            out.impact.y = start.y;
             out.distance = 0;
             return out;
         }
 
         // Horizontal lines
-        let castHorizontal = this.castAgainstHorizontal(matrix, cellSize, startX, startY, angle);
-        let castVertical = this.castAgainstVertical(matrix, cellSize, startX, startY, angle);
+        let castHorizontal = this.castAgainstHorizontal(this.matrix, this.cellSize, start.x, start.y, angle);
+        let castVertical = this.castAgainstVertical(this.matrix, this.cellSize, start.x, start.y, angle);
 
         let cast: Vector2Like | null;
         if (castVertical && !castHorizontal) {
@@ -47,14 +52,14 @@ export class Raycaster {
         } else if (!castVertical) {
             cast = castHorizontal;
         } else {
-            const dHorizontal = pointDistance(startX, startY, castHorizontal!.x, castHorizontal!.y);
-            const dVertical = pointDistance(startX, startY, castVertical.x, castVertical.y);
+            const dHorizontal = pointDistance(start.x, start.y, castHorizontal!.x, castHorizontal!.y);
+            const dVertical = pointDistance(start.x, start.y, castVertical.x, castVertical.y);
             cast = dHorizontal < dVertical ? castHorizontal : castVertical;
         }
 
         if (!cast) return null;
 
-        const distanceToImpact = pointDistance(startX, startY, cast.x, cast.y);
+        const distanceToImpact = pointDistance(start.x, start.y, cast.x, cast.y);
         if (distanceToImpact > maxDistance) return null;
 
         out.impact.x = cast.x;
