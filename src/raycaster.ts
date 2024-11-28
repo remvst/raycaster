@@ -21,7 +21,7 @@ export class Raycaster<CellType> {
     constructor(
         readonly matrix: Matrix<CellType>,
         readonly cellSize: number,
-        readonly isObstacle: (cell: CellType) => boolean,
+        readonly isObstacle: (cell: CellType) => boolean = cell => !!cell,
     ) {
 
     }
@@ -35,7 +35,8 @@ export class Raycaster<CellType> {
         const row = Math.floor(start.y / this.cellSize);
         const col = Math.floor(start.x / this.cellSize);
 
-        if (this.matrix.get(row, col)) {
+        const startCell = this.matrix.get(row, col);
+        if (this.isObstacle(startCell)) {
             out.impact.x = start.x;
             out.impact.y = start.y;
             out.distance = 0;
@@ -152,7 +153,8 @@ export class Raycaster<CellType> {
                 return null;
             }
 
-            if (matrix.get(row, col)) {
+            const cell = matrix.get(row, col);
+            if (this.isObstacle(cell)) {
                 // Got a block!
                 out.x = x;
                 out.y = y;
